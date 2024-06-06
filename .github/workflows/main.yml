@@ -1,0 +1,35 @@
+name: EC2 Deployment using Github actions
+on:
+    push:
+        branches:
+            - prod
+jobs:
+    deploy:
+        name: Deploy Package
+        runs-on: ubuntu-latest
+        
+        steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v2
+
+        - name: Install Dependencies
+          run: |
+            sudo apt-get update -y
+            sudo apt-get install nginx -y
+        
+        - name: Build
+          run: |
+            sudo systemctl start nginx
+            sudo systemctl status nginx
+            echo ' Nginx running sucessfully.!!'
+
+        - name: Final Deployment
+          uses: appleboy/ssh-action@v1.0.0
+          with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USERNAME }}
+            key: ${{ secrets.KEY }}
+            port: ${{ secrets.PORT }}
+            script: |
+                sudo cp index.html /var/www/html/
+                sudo systemctl restart nginx 
